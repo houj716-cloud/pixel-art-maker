@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>像素画生成器 · Pixel Art Maker</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #181b22;
+    --panel-2: #1f232c;
+    --border: #2a2f3a;
+    --text: #e7eaf0;
+    --muted: #9aa3b2;
+    --accent: #6ad36a;
+    --accent-2: #4fa3ff;
+    --danger: #ff6b6b;
+    --radius: 12px;
+    --shadow: 0 8px 30px rgba(0,0,0,0.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 70% -10%, #1a2030 0%, var(--bg) 55%);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    padding: 22px 24px 8px;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: 0.5px;
+  }
+  header h1 .px {
+    color: var(--accent);
+    font-family: "Courier New", monospace;
+  }
+  header p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 20px;
+    max-width: 1280px;
+    margin: 18px auto 40px;
+    padding: 0 24px;
+  }
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .controls { padding: 18px; align-self: start; }
+  .controls h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin: 0 0 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+  .field { margin-bottom: 18px; }
+  .field > label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .field .val {
+    font-family: "Courier New", monospace;
+    color: var(--accent);
+    background: var(--panel-2);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  select, button {
+    font-family: inherit;
+  }
+  select {
+    width: 100%;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .checkbox-row input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--panel-2);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .05s ease, background .15s ease, border-color .15s ease;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--accent); color: #08210a; border-color: var(--accent); }
+  .btn.primary:hover { background: #79e379; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Stage */
+  .stage { padding: 18px; min-height: 420px; display: flex; flex-direction: column; }
+  .dropzone {
+    flex: 1;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--muted);
+    padding: 40px;
+    transition: border-color .15s ease, background .15s ease;
+    cursor: pointer;
+    min-height: 380px;
+  }
+  .dropzone.drag { border-color: var(--accent); background: rgba(106,211,106,0.06); color: var(--text); }
+  .dropzone .big { font-size: 52px; margin-bottom: 12px; filter: grayscale(.2); }
+  .dropzone strong { color: var(--text); }
+  .dropzone .hint { font-size: 13px; margin-top: 8px; }
+
+  .viewer { display: none; flex-direction: column; gap: 14px; }
+  .viewer.active { display: flex; }
+  .tabs { display: flex; gap: 8px; }
+  .tab {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .tab.active { color: var(--text); border-color: var(--accent-2); background: rgba(79,163,255,0.1); }
+  .canvas-wrap {
+    background:
+      linear-gradient(45deg, #14171d 25%, transparent 25%) 0 0/20px 20px,
+      linear-gradient(-45deg, #14171d 25%, transparent 25%) 0 10px/20px 20px,
+      linear-gradient(45deg, transparent 75%, #14171d 75%) 10px -10px/20px 20px,
+      linear-gradient(-45deg, transparent 75%, #14171d 75%) -10px 0/20px 20px,
+      #1b1f27;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 360px;
+    overflow: auto;
+  }
+  canvas {
+    max-width: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4);
+  }
+  #originalCanvas { image-rendering: auto; }
+  .meta { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 13px; }
+  .meta .dims { font-family: "Courier New", monospace; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 0 30px; }
+  footer a { color: var(--accent-2); text-decoration: none; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .swatch { width: 16px; height: 16px; border-radius: 3px; border: 1px solid rgba(255,255,255,.15); }
+</style>
+</head>
+<body>
+  <header>
+    <h1><span class="px">▣</span> 像素画生成器 <span style="color:var(--muted);font-size:16px;">Pixel Art Maker</span></h1>
+    <p>上传任意图片，一键转换成复古像素风 · 全部在你的浏览器本地处理，图片不会上传</p>
+  </header>
+
+  <div class="layout">
+    <!-- Controls -->
+    <section class="panel controls">
+      <h2>参数调节</h2>
+
+      <div class="field">
+        <label>像素块大小 <span class="val" id="pixelSizeVal">8</span></label>
+        <input type="range" id="pixelSize" min="2" max="48" value="8" step="1">
+      </div>
+
+      <div class="field">
+        <label>调色板</label>
+        <select id="palette">
+          <option value="none">原图颜色（不限制）</option>
+          <option value="quant">减色（按数量量化）</option>
+          <option value="gameboy">Game Boy（4 色）</option>
+          <option value="gameboy-pocket">GB Pocket（灰阶）</option>
+          <option value="nes">NES 复古</option>
+          <option value="pico8">PICO-8（16 色）</option>
+          <option value="cga">CGA（4 色）</option>
+          <option value="bw">黑白二值</option>
+        </select>
+        <div class="swatches" id="swatches"></div>
+      </div>
+
+      <div class="field" id="colorCountField">
+        <label>颜色数量 <span class="val" id="colorCountVal">16</span></label>
+        <input type="range" id="colorCount" min="2" max="64" value="16" step="1">
+      </div>
+
+      <div class="field">
+        <label class="checkbox-row"><input type="checkbox" id="dither"> 抖动 (Floyd–Steinberg)</label>
+      </div>
+
+      <div class="field">
+        <label>饱和度 <span class="val" id="satVal">1.0</span></label>
+        <input type="range" id="saturation" min="0" max="2" value="1" step="0.05">
+      </div>
+
+      <div class="field">
+        <label>对比度 <span class="val" id="contrastVal">1.0</span></label>
+        <input type="range" id="contrast" min="0.5" max="2" value="1" step="0.05">
+      </div>
+
+      <div class="field">
+        <label class="checkbox-row"><input type="checkbox" id="grid"> 显示像素网格线</label>
+      </div>
+
+      <div class="field">
+        <label>输出放大倍率 <span class="val" id="scaleVal">1×</span></label>
+        <input type="range" id="scale" min="1" max="12" value="1" step="1">
+      </div>
+
+      <div class="btn-row" style="margin-bottom:10px;">
+        <button class="btn" id="resetBtn">重置参数</button>
+        <button class="btn" id="changeBtn">换图片</button>
+      </div>
+      <button class="btn primary" id="downloadBtn" disabled>⬇ 下载 PNG</button>
+    </section>
+
+    <!-- Stage -->
+    <section class="panel stage">
+      <div class="dropzone" id="dropzone">
+        <div class="big">🖼️</div>
+        <div><strong>点击选择图片</strong> 或拖拽到此处</div>
+        <div class="hint">支持 PNG / JPG / GIF / WebP · 处理完全在本地完成</div>
+        <input type="file" id="fileInput" accept="image/*" hidden>
+      </div>
+
+      <div class="viewer" id="viewer">
+        <div class="tabs">
+          <div class="tab active" data-view="pixel">像素画</div>
+          <div class="tab" data-view="original">原图</div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="pixelCanvas"></canvas>
+          <canvas id="originalCanvas" style="display:none;"></canvas>
+        </div>
+        <div class="meta">
+          <span class="dims" id="dims">—</span>
+          <span id="status">就绪</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    像素画生成器 · 纯前端 Canvas 实现，无需联网 · 你的图片只在本机处理
+  </footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---- Palettes -------------------------------------------------------------
+  const PALETTES = {
+    "gameboy": [[15,56,15],[48,98,48],[139,172,15],[155,188,15]],
+    "gameboy-pocket": [[8,24,32],[52,104,86],[136,192,112],[224,248,208]],
+    "nes": [[124,124,124],[0,0,252],[0,0,188],[68,40,188],[148,0,132],[168,0,32],
+            [168,16,0],[136,20,0],[80,48,0],[0,120,0],[0,104,0],[0,88,0],
+            [0,64,88],[0,0,0],[252,252,252],[60,188,252],[104,136,252],[152,120,248],
+            [248,120,248],[248,88,152],[248,120,88],[252,160,68],[248,184,0],[184,248,24],
+            [88,216,84],[88,248,152],[0,232,216],[248,248,248],[164,228,252],[184,184,248]],
+    "pico8": [[0,0,0],[29,43,83],[126,37,83],[0,135,81],[171,82,54],[95,87,79],
+              [194,195,199],[255,241,232],[255,0,77],[255,163,0],[255,236,39],[0,228,54],
+              [41,173,255],[131,118,156],[255,119,168],[255,204,170]],
+    "cga": [[0,0,0],[85,255,255],[255,85,255],[255,255,255]],
+    "bw": [[0,0,0],[255,255,255]]
+  };
+
+  // ---- DOM ------------------------------------------------------------------
+  const $ = id => document.getElementById(id);
+  const dropzone = $("dropzone"), fileInput = $("fileInput"), viewer = $("viewer");
+  const pixelCanvas = $("pixelCanvas"), originalCanvas = $("originalCanvas");
+  const pctx = pixelCanvas.getContext("2d");
+  const octx = originalCanvas.getContext("2d");
+  const statusEl = $("status"), dimsEl = $("dims"), swatchesEl = $("swatches");
+
+  const ctrl = {
+    pixelSize: $("pixelSize"), palette: $("palette"), colorCount: $("colorCount"),
+    dither: $("dither"), saturation: $("saturation"), contrast: $("contrast"),
+    grid: $("grid"), scale: $("scale")
+  };
+
+  let sourceImage = null;       // HTMLImageElement
+  let renderTimer = null;
+
+  // ---- UI value bindings ----------------------------------------------------
+  function bindVal(input, el, fmt) {
+    const out = $(el);
+    const update = () => { out.textContent = fmt ? fmt(input.value) : input.value; };
+    input.addEventListener("input", update);
+    update();
+  }
+  bindVal(ctrl.pixelSize, "pixelSizeVal");
+  bindVal(ctrl.colorCount, "colorCountVal");
+  bindVal(ctrl.saturation, "satVal", v => Number(v).toFixed(2));
+  bindVal(ctrl.contrast, "contrastVal", v => Number(v).toFixed(2));
+  bindVal(ctrl.scale, "scaleVal", v => v + "×");
+
+  function updateColorCountVisibility() {
+    $("colorCountField").style.display = ctrl.palette.value === "quant" ? "" : "none";
+    renderSwatches();
+  }
+
+  function renderSwatches() {
+    swatchesEl.innerHTML = "";
+    const pal = PALETTES[ctrl.palette.value];
+    if (!pal) return;
+    pal.forEach(c => {
+      const d = document.createElement("div");
+      d.className = "swatch";
+      d.style.background = `rgb(${c[0]},${c[1]},${c[2]})`;
+      swatchesEl.appendChild(d);
+    });
+  }
+
+  // Re-render on any control change (debounced)
+  Object.values(ctrl).forEach(input => {
+    input.addEventListener("input", scheduleRender);
+    input.addEventListener("change", scheduleRender);
+  });
+  ctrl.palette.addEventListener("change", updateColorCountVisibility);
+
+  function scheduleRender() {
+    if (!sourceImage) return;
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(render, 60);
+  }
+
+  // ---- File handling --------------------------------------------------------
+  dropzone.addEventListener("click", () => fileInput.click());
+  $("changeBtn").addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", e => {
+    if (e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
+  });
+
+  ["dragenter", "dragover"].forEach(ev =>
+    dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add("drag"); }));
+  ["dragleave", "drop"].forEach(ev =>
+    dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove("drag"); }));
+  dropzone.addEventListener("drop", e => {
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) loadFile(f);
+  });
+  // Paste from clipboard
+  window.addEventListener("paste", e => {
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (const it of items) {
+      if (it.type.indexOf("image") === 0) { loadFile(it.getAsFile()); break; }
+    }
+  });
+
+  function loadFile(file) {
+    if (!file || !file.type.startsWith("image/")) {
+      alert("请选择图片文件");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        sourceImage = img;
+        dropzone.style.display = "none";
+        viewer.classList.add("active");
+        $("downloadBtn").disabled = false;
+        render();
+      };
+      img.onerror = () => alert("图片加载失败，请换一张试试");
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ---- Color helpers --------------------------------------------------------
+  function applyAdjustments(data, saturation, contrast) {
+    const cF = contrast;
+    for (let i = 0; i < data.length; i += 4) {
+      let r = data[i], g = data[i+1], b = data[i+2];
+      // contrast around 128
+      r = (r - 128) * cF + 128;
+      g = (g - 128) * cF + 128;
+      b = (b - 128) * cF + 128;
+      // saturation
+      if (saturation !== 1) {
+        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+        r = gray + (r - gray) * saturation;
+        g = gray + (g - gray) * saturation;
+        b = gray + (b - gray) * saturation;
+      }
+      data[i]   = clamp(r);
+      data[i+1] = clamp(g);
+      data[i+2] = clamp(b);
+    }
+  }
+  function clamp(v) { return v < 0 ? 0 : v > 255 ? 255 : v | 0; }
+
+  function nearestColor(r, g, b, palette) {
+    let best = 0, bestD = Infinity;
+    for (let i = 0; i < palette.length; i++) {
+      const p = palette[i];
+      const dr = r - p[0], dg = g - p[1], db = b - p[2];
+      const d = dr*dr + dg*dg + db*db;
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    return palette[best];
+  }
+
+  // Median-cut quantization to build a palette of N colors from the image data
+  function medianCut(data, numColors) {
+    const pixels = [];
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i+3] < 8) continue; // skip transparent
+      pixels.push([data[i], data[i+1], data[i+2]]);
+    }
+    if (pixels.length === 0) return [[0,0,0]];
+
+    let buckets = [pixels];
+    while (buckets.length < numColors) {
+      // find bucket with greatest range, split it
+      let target = -1, targetRange = -1, targetChannel = 0;
+      for (let b = 0; b < buckets.length; b++) {
+        const bucket = buckets[b];
+        if (bucket.length < 2) continue;
+        const ranges = channelRanges(bucket);
+        const maxR = Math.max(ranges[0], ranges[1], ranges[2]);
+        if (maxR > targetRange) {
+          targetRange = maxR; target = b;
+          targetChannel = ranges.indexOf(maxR);
+        }
+      }
+      if (target === -1) break;
+      const bucket = buckets[target];
+      bucket.sort((p1, p2) => p1[targetChannel] - p2[targetChannel]);
+      const mid = bucket.length >> 1;
+      const b1 = bucket.slice(0, mid), b2 = bucket.slice(mid);
+      buckets.splice(target, 1, b1, b2);
+    }
+    return buckets.map(avgColor);
+  }
+  function channelRanges(bucket) {
+    let rmin=255,rmax=0,gmin=255,gmax=0,bmin=255,bmax=0;
+    for (const p of bucket) {
+      if (p[0]<rmin)rmin=p[0]; if (p[0]>rmax)rmax=p[0];
+      if (p[1]<gmin)gmin=p[1]; if (p[1]>gmax)gmax=p[1];
+      if (p[2]<bmin)bmin=p[2]; if (p[2]>bmax)bmax=p[2];
+    }
+    return [rmax-rmin, gmax-gmin, bmax-bmin];
+  }
+  function avgColor(bucket) {
+    let r=0,g=0,b=0;
+    for (const p of bucket) { r+=p[0]; g+=p[1]; b+=p[2]; }
+    const n = bucket.length;
+    return [Math.round(r/n), Math.round(g/n), Math.round(b/n)];
+  }
+
+  // Apply palette with optional Floyd-Steinberg dithering, in place on ImageData
+  function applyPalette(imageData, palette, dither, w, h) {
+    const data = imageData.data;
+    if (!dither) {
+      for (let i = 0; i < data.length; i += 4) {
+        const c = nearestColor(data[i], data[i+1], data[i+2], palette);
+        data[i]=c[0]; data[i+1]=c[1]; data[i+2]=c[2];
+      }
+      return;
+    }
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const idx = (y*w + x) * 4;
+        const oldR = data[idx], oldG = data[idx+1], oldB = data[idx+2];
+        const c = nearestColor(oldR, oldG, oldB, palette);
+        data[idx]=c[0]; data[idx+1]=c[1]; data[idx+2]=c[2];
+        const er = oldR - c[0], eg = oldG - c[1], eb = oldB - c[2];
+        spread(data, w, h, x+1, y,   er, eg, eb, 7/16);
+        spread(data, w, h, x-1, y+1, er, eg, eb, 3/16);
+        spread(data, w, h, x,   y+1, er, eg, eb, 5/16);
+        spread(data, w, h, x+1, y+1, er, eg, eb, 1/16);
+      }
+    }
+  }
+  function spread(data, w, h, x, y, er, eg, eb, f) {
+    if (x < 0 || x >= w || y < 0 || y >= h) return;
+    const i = (y*w + x) * 4;
+    data[i]   = clamp(data[i]   + er*f);
+    data[i+1] = clamp(data[i+1] + eg*f);
+    data[i+2] = clamp(data[i+2] + eb*f);
+  }
+
+  // ---- Main render ----------------------------------------------------------
+  function render() {
+    if (!sourceImage) return;
+    statusEl.textContent = "处理中…";
+
+    const block = parseInt(ctrl.pixelSize.value, 10);
+    const paletteName = ctrl.palette.value;
+    const saturation = parseFloat(ctrl.saturation.value);
+    const contrast = parseFloat(ctrl.contrast.value);
+    const showGrid = ctrl.grid.checked;
+    const dither = ctrl.dither.checked;
+    const scale = parseInt(ctrl.scale.value, 10);
+
+    const sw = sourceImage.naturalWidth, sh = sourceImage.naturalHeight;
+
+    // Low-res dimensions: how many pixel blocks across/down
+    const lowW = Math.max(1, Math.round(sw / block));
+    const lowH = Math.max(1, Math.round(sh / block));
+
+    // 1) Draw source down into a small offscreen canvas
+    const small = document.createElement("canvas");
+    small.width = lowW; small.height = lowH;
+    const sctx = small.getContext("2d");
+    sctx.imageSmoothingEnabled = true;
+    sctx.drawImage(sourceImage, 0, 0, lowW, lowH);
+
+    // 2) Pixel processing on the small image
+    const imgData = sctx.getImageData(0, 0, lowW, lowH);
+    applyAdjustments(imgData.data, saturation, contrast);
+
+    let palette = null;
+    if (paletteName === "quant") {
+      palette = medianCut(imgData.data, parseInt(ctrl.colorCount.value, 10));
+    } else if (PALETTES[paletteName]) {
+      palette = PALETTES[paletteName];
+    }
+    if (palette) applyPalette(imgData, palette, dither, lowW, lowH);
+    sctx.putImageData(imgData, 0, 0);
+
+    // 3) Scale up with nearest-neighbor to final canvas
+    const outBlock = Math.max(1, block) * scale;
+    const outW = lowW * outBlock, outH = lowH * outBlock;
+    pixelCanvas.width = outW;
+    pixelCanvas.height = outH;
+    pctx.imageSmoothingEnabled = false;
+    pctx.clearRect(0, 0, outW, outH);
+    pctx.drawImage(small, 0, 0, lowW, lowH, 0, 0, outW, outH);
+
+    // 4) Optional grid overlay
+    if (showGrid && outBlock >= 4) {
+      pctx.strokeStyle = "rgba(0,0,0,0.18)";
+      pctx.lineWidth = 1;
+      pctx.beginPath();
+      for (let x = 0; x <= lowW; x++) {
+        const px = Math.round(x * outBlock) + 0.5;
+        pctx.moveTo(px, 0); pctx.lineTo(px, outH);
+      }
+      for (let y = 0; y <= lowH; y++) {
+        const py = Math.round(y * outBlock) + 0.5;
+        pctx.moveTo(0, py); pctx.lineTo(outW, py);
+      }
+      pctx.stroke();
+    }
+
+    // Original canvas
+    originalCanvas.width = sw; originalCanvas.height = sh;
+    octx.drawImage(sourceImage, 0, 0);
+
+    dimsEl.textContent = `${sw}×${sh}px  →  ${lowW}×${lowH} 块  ·  输出 ${outW}×${outH}px`;
+    statusEl.textContent = "完成 ✓";
+  }
+
+  // ---- Tabs -----------------------------------------------------------------
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      const v = tab.dataset.view;
+      pixelCanvas.style.display = v === "pixel" ? "" : "none";
+      originalCanvas.style.display = v === "original" ? "" : "none";
+    });
+  });
+
+  // ---- Download -------------------------------------------------------------
+  $("downloadBtn").addEventListener("click", () => {
+    if (!sourceImage) return;
+    const link = document.createElement("a");
+    link.download = "pixel-art.png";
+    link.href = pixelCanvas.toDataURL("image/png");
+    link.click();
+  });
+
+  // ---- Reset ----------------------------------------------------------------
+  $("resetBtn").addEventListener("click", () => {
+    ctrl.pixelSize.value = 8;
+    ctrl.palette.value = "none";
+    ctrl.colorCount.value = 16;
+    ctrl.dither.checked = false;
+    ctrl.saturation.value = 1;
+    ctrl.contrast.value = 1;
+    ctrl.grid.checked = false;
+    ctrl.scale.value = 1;
+    document.querySelectorAll("input[type=range]").forEach(r => r.dispatchEvent(new Event("input")));
+    updateColorCountVisibility();
+    render();
+  });
+
+  // ---- Init -----------------------------------------------------------------
+  updateColorCountVisibility();
+})();
+</script>
+</body>
+</html>
