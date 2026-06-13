@@ -10,8 +10,8 @@
 <style>
   :root {
     --bg: #07070f;
-    --panel: #0b0b18;
-    --panel-2: #0f0f20;
+    --panel: rgba(11,11,24,0.82);
+    --panel-2: rgba(15,15,32,0.88);
     --border: #1e1e38;
     --text: #c8c8f0;
     --muted: #5555aa;
@@ -29,10 +29,10 @@
   body {
     font-family: "Courier New", "Lucida Console", monospace;
     background-color: var(--bg);
-    background-image:
-      linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
-    background-size: 40px 40px;
+    background-image: url('bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     color: var(--text);
     min-height: 100vh;
     position: relative;
