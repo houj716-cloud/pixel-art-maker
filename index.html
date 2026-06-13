@@ -29,13 +29,17 @@
   body {
     font-family: "Courier New", "Lucida Console", monospace;
     background-color: var(--bg);
-    background-image: url('bg.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
     color: var(--text);
     min-height: 100vh;
     position: relative;
+  }
+  #bgCanvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    display: block;
   }
 
   /* CRT 边角晕染 */
@@ -387,6 +391,7 @@
 </style>
 </head>
 <body>
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
   <header>
     <div class="header-insert">● 喵喵 投个币 ●</div>
     <h1><span class="px">▣</span> <span class="h1-main">喵用 Claude Code 搓出来的像素画生成器</span><span class="h1-en">NYAN ART MAKER</span></h1>
@@ -487,6 +492,101 @@
   <footer>
     NYAN ART MAKER · 纯前端喵 · 本地运行无需联网 · © 1P 喵～
   </footer>
+
+<script>
+(function () {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const TYPES = ['x', 'o', 'tri', 'sq'];
+  const PALETTE = [
+    ['#ff1c7e', '#ff007a'],
+    ['#00e5ff', '#00c0ee'],
+    ['#3535ff', '#2020cc'],
+    ['#ff00ff', '#cc00cc'],
+    ['#00ffd0', '#00aaaa'],
+  ];
+
+  let symbols = [], rafId;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function makeSym(x, y) {
+    const [col, glow] = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+    return {
+      x: x !== undefined ? x : Math.random() * canvas.width,
+      y: y !== undefined ? y : Math.random() * canvas.height,
+      type: TYPES[Math.floor(Math.random() * TYPES.length)],
+      col, glow,
+      size: 18 + Math.random() * 54,
+      alpha: 0.45 + Math.random() * 0.55,
+      speed: 0.28 + Math.random() * 0.62,
+    };
+  }
+
+  function init() {
+    resize();
+    symbols = [];
+    for (let i = 0; i < 62; i++) symbols.push(makeSym());
+  }
+
+  function drawSym(s) {
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.globalAlpha = s.alpha;
+    ctx.strokeStyle = s.col;
+    ctx.shadowColor = s.glow;
+    ctx.shadowBlur = 18;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    const r = s.size * 0.42;
+    if (s.type === 'x') {
+      ctx.lineWidth = Math.max(3, s.size * 0.15);
+      ctx.beginPath(); ctx.moveTo(-r, -r); ctx.lineTo(r, r); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(r, -r); ctx.lineTo(-r, r); ctx.stroke();
+    } else if (s.type === 'o') {
+      ctx.lineWidth = Math.max(2.5, s.size * 0.09);
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+    } else if (s.type === 'tri') {
+      ctx.lineWidth = Math.max(2.5, s.size * 0.09);
+      ctx.beginPath();
+      ctx.moveTo(0, -r); ctx.lineTo(r * 0.866, r * 0.5); ctx.lineTo(-r * 0.866, r * 0.5);
+      ctx.closePath(); ctx.stroke();
+    } else {
+      ctx.lineWidth = Math.max(2.5, s.size * 0.09);
+      ctx.strokeRect(-r, -r, r * 2, r * 2);
+    }
+    ctx.restore();
+  }
+
+  function tick() {
+    const W = canvas.width, H = canvas.height;
+    ctx.fillStyle = '#07070f';
+    ctx.fillRect(0, 0, W, H);
+    for (const s of symbols) {
+      s.x += s.speed;
+      s.y += s.speed;
+      const m = s.size + 20;
+      if (s.x > W + m) s.x -= (W + m * 2);
+      if (s.y > H + m) s.y -= (H + m * 2);
+      drawSym(s);
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelAnimationFrame(rafId);
+    else rafId = requestAnimationFrame(tick);
+  });
+
+  init();
+  window.addEventListener('resize', init);
+  tick();
+})();
+</script>
 
 <script>
 (function () {
