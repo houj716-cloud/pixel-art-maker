@@ -10,11 +10,11 @@
 <style>
   :root {
     --bg: #07070f;
-    --panel: rgba(11,11,24,0.82);
-    --panel-2: rgba(15,15,32,0.88);
-    --border: #1e1e38;
-    --text: #c8c8f0;
-    --muted: #5555aa;
+    --panel: rgba(6,6,18,0.91);
+    --panel-2: rgba(10,10,26,0.94);
+    --border: #2a2a50;
+    --text: #e2e4ff;
+    --muted: #8899cc;
     --accent: #39ff14;
     --accent-2: #00e5ff;
     --accent-3: #ff00ff;
@@ -130,9 +130,11 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow:
-      0 0 0 1px rgba(0,229,255,0.06),
+      0 0 0 1px rgba(0,229,255,0.10),
       inset 0 0 60px rgba(0,0,20,0.4),
-      0 8px 40px rgba(0,0,0,0.7);
+      0 8px 40px rgba(0,0,0,0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     position: relative;
     overflow: hidden;
   }
