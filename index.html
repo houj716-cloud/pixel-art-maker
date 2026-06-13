@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>几把猴儿的专属像素画生成器 · Pixel Art Maker</title>
+<title>像素画生成器 · Pixel Art Maker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -353,12 +353,7 @@
     box-shadow: 0 0 10px rgba(0,229,255,0.1);
   }
   .canvas-wrap {
-    background:
-      linear-gradient(45deg, #0b0b18 25%, transparent 25%) 0 0/20px 20px,
-      linear-gradient(-45deg, #0b0b18 25%, transparent 25%) 0 10px/20px 20px,
-      linear-gradient(45deg, transparent 75%, #0b0b18 75%) 10px -10px/20px 20px,
-      linear-gradient(-45deg, transparent 75%, #0b0b18 75%) -10px 0/20px 20px,
-      #0f0f20;
+    background: #0f0f20;
     border: 1px solid rgba(0,229,255,0.12);
     border-radius: 3px;
     padding: 16px;
@@ -407,9 +402,9 @@
 </head>
 <body>
   <header>
-    <div class="header-insert">● INSERT COIN ●</div>
-    <h1><span class="px">▣</span> <span class="h1-main">几把猴儿的像素画生成器</span><span class="h1-en">PIXEL ART MAKER</span></h1>
-    <p>上传任意图片，一键转换成复古像素风 · 全部在你的浏览器本地处理，图片不会上传</p>
+    <div class="header-insert">● 喵喵 投个币 ●</div>
+    <h1><span class="px">▣</span> <span class="h1-main">喵用 Claude Code 搓出来的像素画生成器</span><span class="h1-en">NYAN ART MAKER</span></h1>
+    <p>把图片扔给本喵，一键变成复古像素风 喵～ · 全程在浏览器里处理，绝对不偷上传喵</p>
     <div class="header-score">
       <div>STAGE <span class="sv">01</span></div>
       <div>HI-SCORE <span class="sv">999999</span></div>
@@ -420,76 +415,76 @@
   <div class="layout">
     <!-- Controls -->
     <section class="panel controls">
-      <h2>参数调节</h2>
+      <h2>猫爪调参喵</h2>
 
       <div class="field">
-        <label>像素块大小 <span class="val" id="pixelSizeVal">8</span></label>
+        <label>像素块大小喵 <span class="val" id="pixelSizeVal">8</span></label>
         <input type="range" id="pixelSize" min="2" max="48" value="8" step="1">
       </div>
 
       <div class="field">
-        <label>调色板</label>
+        <label>调色板喵</label>
         <select id="palette">
-          <option value="none">原图颜色（不限制）</option>
-          <option value="quant">减色（按数量量化）</option>
+          <option value="none">原图颜色喵（随便啦）</option>
+          <option value="quant">减色喵（按数量）</option>
           <option value="gameboy">Game Boy（4 色）</option>
           <option value="gameboy-pocket">GB Pocket（灰阶）</option>
           <option value="nes">NES 复古</option>
           <option value="pico8">PICO-8（16 色）</option>
           <option value="cga">CGA（4 色）</option>
-          <option value="bw">黑白二值</option>
+          <option value="bw">黑白二值喵</option>
         </select>
         <div class="swatches" id="swatches"></div>
       </div>
 
       <div class="field" id="colorCountField">
-        <label>颜色数量 <span class="val" id="colorCountVal">16</span></label>
+        <label>颜色数量喵 <span class="val" id="colorCountVal">16</span></label>
         <input type="range" id="colorCount" min="2" max="64" value="16" step="1">
       </div>
 
       <div class="field">
-        <label class="checkbox-row"><input type="checkbox" id="dither"> 抖动 (Floyd–Steinberg)</label>
+        <label class="checkbox-row"><input type="checkbox" id="dither"> 抖动喵 (Floyd–Steinberg)</label>
       </div>
 
       <div class="field">
-        <label>饱和度 <span class="val" id="satVal">1.0</span></label>
+        <label>饱和度喵 <span class="val" id="satVal">1.0</span></label>
         <input type="range" id="saturation" min="0" max="2" value="1" step="0.05">
       </div>
 
       <div class="field">
-        <label>对比度 <span class="val" id="contrastVal">1.0</span></label>
+        <label>对比度喵 <span class="val" id="contrastVal">1.0</span></label>
         <input type="range" id="contrast" min="0.5" max="2" value="1" step="0.05">
       </div>
 
       <div class="field">
-        <label class="checkbox-row"><input type="checkbox" id="grid"> 显示像素网格线</label>
+        <label class="checkbox-row"><input type="checkbox" id="grid"> 显示网格线喵</label>
       </div>
 
       <div class="field">
-        <label>输出放大倍率 <span class="val" id="scaleVal">1×</span></label>
+        <label>输出放大倍率喵 <span class="val" id="scaleVal">1×</span></label>
         <input type="range" id="scale" min="1" max="12" value="1" step="1">
       </div>
 
       <div class="btn-row" style="margin-bottom:10px;">
-        <button class="btn" id="resetBtn">重置参数</button>
-        <button class="btn" id="changeBtn">换图片</button>
+        <button class="btn" id="resetBtn">重置喵</button>
+        <button class="btn" id="changeBtn">换图喵</button>
       </div>
-      <button class="btn primary" id="downloadBtn" disabled>⬇ 下载 PNG</button>
+      <button class="btn primary" id="downloadBtn" disabled>⬇ 下载喵</button>
     </section>
 
     <!-- Stage -->
     <section class="panel stage">
       <div class="dropzone" id="dropzone">
-        <div class="big">🖼️</div>
-        <div><strong>点击选择图片</strong> 或拖拽到此处</div>
-        <div class="hint">支持 PNG / JPG / GIF / WebP · 处理完全在本地完成</div>
+        <div class="big">🐱</div>
+        <div><strong>点这里喵～</strong> 或把图拖来给本喵</div>
+        <div class="hint">喵支持 PNG / JPG / GIF / WebP · 全程本地处理不联网喵</div>
         <input type="file" id="fileInput" accept="image/*" hidden>
       </div>
 
       <div class="viewer" id="viewer">
         <div class="tabs">
-          <div class="tab active" data-view="pixel">像素画</div>
-          <div class="tab" data-view="original">原图</div>
+          <div class="tab active" data-view="pixel">像素画喵</div>
+          <div class="tab" data-view="original">原图喵</div>
         </div>
         <div class="canvas-wrap">
           <canvas id="pixelCanvas"></canvas>
@@ -497,14 +492,14 @@
         </div>
         <div class="meta">
           <span class="dims" id="dims">—</span>
-          <span id="status">就绪</span>
+          <span id="status">随时待命喵～</span>
         </div>
       </div>
     </section>
   </div>
 
   <footer>
-    PIXEL ART MAKER · 纯前端 Canvas · 本地运行无需联网 · © 1P
+    NYAN ART MAKER · 纯前端喵 · 本地运行无需联网 · © 1P 喵～
   </footer>
 
 <script>
@@ -613,7 +608,7 @@
 
   function loadFile(file) {
     if (!file || !file.type.startsWith("image/")) {
-      alert("请选择图片文件");
+      alert("喵？这不是图片文件啦！");
       return;
     }
     const reader = new FileReader();
@@ -626,7 +621,7 @@
         $("downloadBtn").disabled = false;
         render();
       };
-      img.onerror = () => alert("图片加载失败，请换一张试试");
+      img.onerror = () => alert("喵呜！图片加载失败了，换一张试试喵～");
       img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
@@ -749,7 +744,7 @@
   // ---- Main render ----------------------------------------------------------
   function render() {
     if (!sourceImage) return;
-    statusEl.textContent = "处理中…";
+    statusEl.textContent = "努力处理中喵…";
 
     const block = parseInt(ctrl.pixelSize.value, 10);
     const paletteName = ctrl.palette.value;
@@ -815,7 +810,7 @@
     octx.drawImage(sourceImage, 0, 0);
 
     dimsEl.textContent = `${sw}×${sh}px  →  ${lowW}×${lowH} 块  ·  输出 ${outW}×${outH}px`;
-    statusEl.textContent = "完成 ✓";
+    statusEl.textContent = "好啦完成了喵 ✓";
   }
 
   // ---- Tabs -----------------------------------------------------------------
