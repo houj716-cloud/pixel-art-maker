@@ -507,6 +507,12 @@
   /* 开机说明界面（默认隐藏，仅手机显示） */
   .boot-screen { display: none; }
 
+  /* 电源键热区（默认隐藏，仅手机显示） */
+  .power-btn { display: none; }
+
+  /* 屏幕内容容器：桌面端透明不影响布局 */
+  .screen-content { display: contents; }
+
   /* ===== 手机端：换成竖版游戏机外框 + Tab 切换 ===== */
   @media (max-width: 700px) {
     body { overflow-x: hidden; }
@@ -582,6 +588,59 @@
     }
     .btn-start:active {
       background: radial-gradient(ellipse, rgba(57,255,20,0.4), transparent 70%);
+    }
+
+    /* 左侧电源长条键热区 */
+    .power-btn {
+      display: block;
+      position: absolute;
+      left: 9%;
+      top: 35%;
+      width: 8%;
+      height: 9%;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      z-index: 6;
+      border-radius: 4px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .power-btn:active {
+      background: radial-gradient(circle, rgba(255,60,60,0.45), transparent 70%);
+    }
+
+    /* 屏幕内容容器：手机端填满屏幕窗口，作为关机塌缩动画的对象 */
+    .console-screen-slot .screen-content {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      position: relative;
+      transform-origin: center center;
+    }
+    /* 关机后：内容隐藏，屏幕熄灭（保持深色） */
+    .console-screen-slot.power-off .screen-content { display: none; }
+
+    /* Game Boy 关机：纵向塌缩成一条亮线 → 收成一点 → 熄灭 */
+    @keyframes gbPowerOff {
+      0%   { transform: scaleY(1) scaleX(1);     filter: brightness(1);   opacity: 1; }
+      35%  { transform: scaleY(0.014) scaleX(1); filter: brightness(2.6); opacity: 1; }
+      70%  { transform: scaleY(0.014) scaleX(0.05); filter: brightness(3); opacity: 1; }
+      100% { transform: scaleY(0.014) scaleX(0); filter: brightness(3);   opacity: 0; }
+    }
+    /* 开机：从一点 → 展开成线 → 铺满 */
+    @keyframes gbPowerOn {
+      0%   { transform: scaleY(0.014) scaleX(0); filter: brightness(3);   opacity: 0; }
+      35%  { transform: scaleY(0.014) scaleX(1); filter: brightness(2.6); opacity: 1; }
+      100% { transform: scaleY(1) scaleX(1);     filter: brightness(1);   opacity: 1; }
+    }
+    .console-screen-slot .screen-content.gb-off {
+      animation: gbPowerOff 0.55s ease-in forwards;
+    }
+    .console-screen-slot .screen-content.gb-on {
+      animation: gbPowerOn 0.5s ease-out forwards;
     }
 
     /* 开机说明界面：黑底 + 像素字体，铺满屏幕窗口 */
@@ -771,7 +830,9 @@
     <button class="face-btn btn-a" id="btnA" type="button" aria-label="A 键 出图喵"></button>
     <button class="face-btn btn-b" id="btnB" type="button" aria-label="B 键 调参喵"></button>
     <button class="face-btn btn-start" id="btnStart" type="button" aria-label="START 开始喵"></button>
+    <button class="power-btn" id="powerBtn" type="button" aria-label="电源开关喵"></button>
     <div class="console-screen-slot show-stage booting" id="screenSlot">
+      <div class="screen-content" id="screenContent">
       <div class="boot-screen" id="bootScreen">
         <div class="boot-title">★ NYAN ART ★</div>
         <div class="boot-keys">
@@ -869,6 +930,7 @@
         </div>
       </div>
     </section>
+      </div>
       </div>
     </div>
   </div>
@@ -1329,6 +1391,7 @@
     const slot = document.getElementById('screenSlot');
     const tabs = document.getElementById('mobileTabs');
     if (!slot || !tabs) return;
+    let powered = true;
     function show(which) {
       slot.classList.toggle('show-controls', which === 'controls');
       slot.classList.toggle('show-stage', which === 'stage');
@@ -1364,6 +1427,7 @@
       };
       const start = e => {
         if (!window.matchMedia('(max-width: 700px)').matches) return;
+        if (!powered) return;
         if (!slot.classList.contains('show-controls')) return;
         e.preventDefault();
         buzz(15);
@@ -1383,20 +1447,50 @@
     const btnA = document.getElementById('btnA');
     const btnB = document.getElementById('btnB');
     if (btnA) btnA.addEventListener('click', () => {
-      if (!window.matchMedia('(max-width: 700px)').matches) return;
+      if (!window.matchMedia('(max-width: 700px)').matches || !powered) return;
       if (slot.classList.contains('show-controls')) { buzz(20); show('stage'); }
     });
     if (btnB) btnB.addEventListener('click', () => {
-      if (!window.matchMedia('(max-width: 700px)').matches) return;
+      if (!window.matchMedia('(max-width: 700px)').matches || !powered) return;
       if (slot.classList.contains('show-stage')) { buzz(20); show('controls'); }
     });
 
     // 手机端：按 START（或点开机屏）进入主界面
     const btnStart = document.getElementById('btnStart');
     const boot = document.getElementById('bootScreen');
-    function startGame() { buzz(30); slot.classList.remove('booting'); }
+    function startGame() { if (!powered) return; buzz(30); slot.classList.remove('booting'); }
     if (btnStart) btnStart.addEventListener('click', startGame);
     if (boot) boot.addEventListener('click', startGame);
+
+    // 手机端：左侧电源键 —— 模仿 Game Boy 关机/开机
+    const powerBtn = document.getElementById('powerBtn');
+    const screenContent = document.getElementById('screenContent');
+    let offTimer = 0, onTimer = 0;
+    function powerOff() {
+      powered = false;
+      buzz(45);
+      clearTimeout(onTimer);
+      screenContent.classList.remove('gb-on');
+      screenContent.classList.add('gb-off');
+      offTimer = setTimeout(() => { slot.classList.add('power-off'); }, 540);
+    }
+    function powerOn() {
+      powered = true;
+      buzz(45);
+      clearTimeout(offTimer);
+      slot.classList.remove('power-off');
+      slot.classList.add('booting');   // 重新出现开机界面
+      show('stage');
+      screenContent.classList.remove('gb-off');
+      screenContent.classList.add('gb-on');
+      onTimer = setTimeout(() => { screenContent.classList.remove('gb-on'); }, 520);
+    }
+    if (powerBtn && screenContent) {
+      powerBtn.addEventListener('click', () => {
+        if (!window.matchMedia('(max-width: 700px)').matches) return;
+        if (powered) powerOff(); else powerOn();
+      });
+    }
 
     // 手机端：点结果图全屏放大查看
     const pixelCanvas = document.getElementById('pixelCanvas');
