@@ -41,6 +41,16 @@
     z-index: -1;
     display: block;
   }
+  /* 视频背景：默认隐藏（桌面用动态画布），仅手机显示 */
+  #bgVideo {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+  }
 
   /* CRT 边角晕染 */
   body::after {
@@ -517,6 +527,10 @@
   @media (max-width: 700px) {
     body { overflow-x: hidden; }
 
+    /* 手机端背景换成猫咪视频 */
+    #bgCanvas { display: none; }
+    #bgVideo { display: block; }
+
     .console-machine {
       width: 100%;
       min-width: 0;
@@ -809,6 +823,9 @@
 </head>
 <body>
 <canvas id="bgCanvas" aria-hidden="true"></canvas>
+<video id="bgVideo" aria-hidden="true" muted loop playsinline webkit-playsinline preload="auto">
+  <source src="bg-cats.mp4" type="video/mp4">
+</video>
 <div id="fsPreview" aria-hidden="true">
   <img id="fsPreviewImg" alt="结果预览喵">
   <div class="fs-hint">点任意处关闭喵 ✕</div>
@@ -1506,6 +1523,27 @@
       });
       fs.addEventListener('click', () => fs.classList.remove('show'));
     }
+  })();
+</script>
+
+<script>
+  // 手机端背景视频：只循环播放前 6 秒
+  (function () {
+    const v = document.getElementById('bgVideo');
+    if (!v) return;
+    const LOOP_END = 6;
+    v.addEventListener('timeupdate', () => {
+      if (v.currentTime >= LOOP_END) v.currentTime = 0;
+    });
+    function tryPlay() {
+      if (!window.matchMedia('(max-width: 700px)').matches) return;
+      const p = v.play();
+      if (p && p.catch) p.catch(() => {});
+    }
+    tryPlay();
+    // 部分浏览器需用户首次交互后才允许自动播放
+    document.addEventListener('touchstart', tryPlay, { once: true });
+    document.addEventListener('click', tryPlay, { once: true });
   })();
 </script>
 </body>
