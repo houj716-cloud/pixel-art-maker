@@ -498,6 +498,9 @@
   /* 手机端 Tab 栏（默认隐藏，仅手机显示） */
   .mobile-tabs { display: none; }
 
+  /* 方向键热区（叠在游戏机 D-pad 上，默认隐藏，仅手机显示） */
+  .dpad-btn { display: none; }
+
   /* ===== 手机端：换成竖版游戏机外框 + Tab 切换 ===== */
   @media (max-width: 700px) {
     body { overflow-x: hidden; }
@@ -520,6 +523,27 @@
       padding: 4px;
       border-radius: 6px;
       background: rgba(3, 4, 12, 0.97);
+    }
+
+    /* 方向键热区：叠在 D-pad 上/下臂，按住连续翻动调参面板 */
+    .dpad-btn {
+      display: block;
+      position: absolute;
+      left: 23.5%;
+      width: 14%;
+      height: 7%;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      z-index: 6;
+      border-radius: 4px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dpad-up   { top: 56.5%; }
+    .dpad-down { top: 64.5%; }
+    .dpad-btn:active {
+      background: radial-gradient(circle, rgba(57,255,20,0.35), transparent 70%);
     }
 
     /* 屏幕内：Tab 栏 + 单个面板填满 */
@@ -657,6 +681,8 @@
   </header>
 
   <div class="console-machine">
+    <button class="dpad-btn dpad-up" id="dpadUp" type="button" aria-label="向上翻动喵"></button>
+    <button class="dpad-btn dpad-down" id="dpadDown" type="button" aria-label="向下翻动喵"></button>
     <div class="console-screen-slot show-stage" id="screenSlot">
       <div class="mobile-tabs" id="mobileTabs">
         <button type="button" data-mtab="controls">调参喵</button>
@@ -1225,6 +1251,32 @@
         }
       });
     }
+
+    // 手机端：方向键上/下连续翻动调参面板
+    function bindDpad(btn, dir) {
+      if (!btn) return;
+      let holding = false, raf = 0;
+      const step = () => {
+        if (!holding) return;
+        const panel = document.querySelector('.console-screen-slot.show-controls .controls');
+        if (panel) panel.scrollTop += dir * 7;
+        raf = requestAnimationFrame(step);
+      };
+      const start = e => {
+        if (!window.matchMedia('(max-width: 700px)').matches) return;
+        if (!slot.classList.contains('show-controls')) return;
+        e.preventDefault();
+        holding = true;
+        step();
+      };
+      const stop = () => { holding = false; cancelAnimationFrame(raf); };
+      btn.addEventListener('pointerdown', start);
+      btn.addEventListener('pointerup', stop);
+      btn.addEventListener('pointerleave', stop);
+      btn.addEventListener('pointercancel', stop);
+    }
+    bindDpad(document.getElementById('dpadUp'), -1);
+    bindDpad(document.getElementById('dpadDown'), 1);
 
     // 手机端：点结果图全屏放大查看
     const pixelCanvas = document.getElementById('pixelCanvas');
