@@ -14,7 +14,7 @@
     --panel-2: rgba(10,10,26,0.94);
     --border: #2a2a50;
     --text: #e2e4ff;
-    --muted: #aeb8f2;
+    --muted: #8899cc;
     --accent: #39ff14;
     --accent-2: #00e5ff;
     --accent-3: #ff00ff;
@@ -180,7 +180,6 @@
     justify-content: space-between;
     align-items: center;
     font-size: 11px;
-    font-weight: 700;
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.8px;
@@ -219,7 +218,6 @@
     align-items: center;
     gap: 8px;
     font-size: 11px;
-    font-weight: 700;
     cursor: pointer;
     user-select: none;
     text-transform: uppercase;
@@ -534,6 +532,18 @@
     #bgVideo { display: block; }
     body { background-color: #ffc4e6; }
     body::after { display: none; }
+
+    /* 游戏机上方 header 浅紫字：粉底上加强对比（深紫 + 加粗 + 白描边光） */
+    header p,
+    .header-score {
+      color: #5a1f57;
+      font-weight: 700;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+    }
+    .header-score .sv {
+      color: #c81e6a;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+    }
 
     .console-machine {
       width: 100%;
