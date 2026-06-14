@@ -1349,6 +1349,9 @@
       });
     }
 
+    // 按键震动（Android 支持；iOS Safari/微信不支持 Vibration API）
+    function buzz(ms) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
+
     // 手机端：方向键上/下连续翻动调参面板
     function bindDpad(btn, dir) {
       if (!btn) return;
@@ -1363,6 +1366,7 @@
         if (!window.matchMedia('(max-width: 700px)').matches) return;
         if (!slot.classList.contains('show-controls')) return;
         e.preventDefault();
+        buzz(15);
         holding = true;
         step();
       };
@@ -1380,17 +1384,17 @@
     const btnB = document.getElementById('btnB');
     if (btnA) btnA.addEventListener('click', () => {
       if (!window.matchMedia('(max-width: 700px)').matches) return;
-      if (slot.classList.contains('show-controls')) show('stage');
+      if (slot.classList.contains('show-controls')) { buzz(20); show('stage'); }
     });
     if (btnB) btnB.addEventListener('click', () => {
       if (!window.matchMedia('(max-width: 700px)').matches) return;
-      if (slot.classList.contains('show-stage')) show('controls');
+      if (slot.classList.contains('show-stage')) { buzz(20); show('controls'); }
     });
 
     // 手机端：按 START（或点开机屏）进入主界面
     const btnStart = document.getElementById('btnStart');
     const boot = document.getElementById('bootScreen');
-    function startGame() { slot.classList.remove('booting'); }
+    function startGame() { buzz(30); slot.classList.remove('booting'); }
     if (btnStart) btnStart.addEventListener('click', startGame);
     if (boot) boot.addEventListener('click', startGame);
 
