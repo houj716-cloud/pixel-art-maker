@@ -388,6 +388,113 @@
     border: 1px solid rgba(255,255,255,.15);
     box-shadow: 0 0 4px rgba(0,0,0,0.4);
   }
+
+  /* === Handheld console frame fed from uploaded PNG === */
+  .console-machine {
+    position: relative;
+    width: min(1500px, calc(100vw - 24px));
+    min-width: 980px;
+    aspect-ratio: 1698 / 926;
+    margin: 12px auto 38px;
+    background-image: url("4fea8983-a3a8-4064-8725-676d8cb9931e.png");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+    filter: drop-shadow(0 18px 55px rgba(0,0,0,.75)) drop-shadow(0 0 22px rgba(0,229,255,.14));
+    z-index: 1;
+  }
+
+  .console-screen-slot {
+    position: absolute;
+    left: 20.7%;
+    top: 18.0%;
+    width: 57.9%;
+    height: 57.2%;
+    padding: 10px;
+    overflow: hidden;
+    background: rgba(3, 4, 12, 0.96);
+    border-radius: 3px;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,229,255,.18),
+      inset 0 0 42px rgba(0,0,20,.65);
+  }
+
+  .console-screen-slot .layout {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .console-screen-slot .panel {
+    min-width: 0;
+    border-color: rgba(0,229,255,.18);
+  }
+
+  .console-screen-slot .controls {
+    padding: 13px 11px;
+    overflow: auto;
+  }
+
+  .console-screen-slot .controls h2 {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  .console-screen-slot .field {
+    margin-bottom: 10px;
+  }
+
+  .console-screen-slot .field > label {
+    font-size: 9px;
+    margin-bottom: 5px;
+  }
+
+  .console-screen-slot .btn {
+    padding: 8px 10px;
+    font-size: 9px;
+  }
+
+  .console-screen-slot .stage {
+    min-height: 0;
+    height: 100%;
+    padding: 13px 11px;
+  }
+
+  .console-screen-slot .dropzone {
+    min-height: 0;
+    height: 100%;
+    padding: 20px;
+  }
+
+  .console-screen-slot .canvas-wrap {
+    min-height: 0;
+    height: 100%;
+    padding: 10px;
+  }
+
+  .console-screen-slot .viewer {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .console-screen-slot .viewer.active {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  @media (max-width: 1020px) {
+    body { overflow-x: auto; }
+    .console-machine {
+      width: 980px;
+      margin-left: 12px;
+      margin-right: 12px;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -403,7 +510,9 @@
     </div>
   </header>
 
-  <div class="layout">
+  <div class="console-machine">
+    <div class="console-screen-slot">
+      <div class="layout">
     <!-- Controls -->
     <section class="panel controls">
       <h2>猫爪调参喵</h2>
@@ -487,6 +596,8 @@
         </div>
       </div>
     </section>
+      </div>
+    </div>
   </div>
 
   <footer>
