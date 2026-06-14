@@ -575,14 +575,96 @@
     .console-screen-slot .btn { padding: 7px 8px; font-size: 8px; }
     .console-screen-slot .stage { padding: 8px 9px; min-height: 0; }
     .console-screen-slot .dropzone { min-height: 0; padding: 14px; }
-    .console-screen-slot .viewer,
-    .console-screen-slot .canvas-wrap { height: auto; min-height: 0; }
+    /* 出图区：整张结果按窗口自适应缩放、完整可见，不被截断 */
+    .console-screen-slot .viewer { height: 100%; min-height: 0; }
+    .console-screen-slot .viewer.active {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 6px;
+    }
+    .console-screen-slot .viewer .tabs { gap: 5px; }
+    .console-screen-slot .viewer .tab {
+      padding: 4px 8px;
+      font-size: 8px;
+      letter-spacing: 1px;
+    }
+    .console-screen-slot .canvas-wrap {
+      padding: 5px;
+      min-height: 0;
+      height: auto;
+      overflow: hidden;
+      position: relative;
+    }
+    .console-screen-slot .viewer.active .canvas-wrap::after {
+      content: "🔍 点图放大喵";
+      position: absolute;
+      bottom: 3px;
+      right: 5px;
+      font-size: 7px;
+      color: var(--accent-2);
+      background: rgba(0,0,0,0.55);
+      padding: 1px 4px;
+      border-radius: 3px;
+      pointer-events: none;
+    }
+    .console-screen-slot .canvas-wrap canvas {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+    }
+    .console-screen-slot .meta {
+      font-size: 7px;
+      letter-spacing: 0;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: center;
+      text-align: center;
+    }
+  }
+
+  /* 全屏放大预览（点结果图打开） */
+  #fsPreview {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(3, 3, 12, 0.95);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+  #fsPreview.show { display: flex; }
+  #fsPreview img {
+    max-width: 100%;
+    max-height: 84%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    border: 1px solid rgba(0,229,255,0.35);
+    border-radius: 4px;
+    box-shadow: 0 0 44px rgba(0,229,255,0.22);
+  }
+  #fsPreview .fs-hint {
+    position: absolute;
+    bottom: 26px;
+    left: 0; right: 0;
+    text-align: center;
+    color: var(--accent-2);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-shadow: var(--glow-cyan);
   }
 
 </style>
 </head>
 <body>
 <canvas id="bgCanvas" aria-hidden="true"></canvas>
+<div id="fsPreview" aria-hidden="true">
+  <img id="fsPreviewImg" alt="结果预览喵">
+  <div class="fs-hint">点任意处关闭喵 ✕</div>
+</div>
   <header>
     <div class="header-insert">● 喵喵 投个币 ●</div>
     <h1><span class="px">▣</span> <span class="h1-main">喵用 Claude Code 搓出来的像素画生成器</span><span class="h1-en">NYAN ART MAKER</span></h1>
@@ -1162,6 +1244,21 @@
           show('stage');
         }
       });
+    }
+
+    // 手机端：点结果图全屏放大查看
+    const pixelCanvas = document.getElementById('pixelCanvas');
+    const fs = document.getElementById('fsPreview');
+    const fsImg = document.getElementById('fsPreviewImg');
+    if (pixelCanvas && fs && fsImg) {
+      pixelCanvas.style.cursor = 'zoom-in';
+      pixelCanvas.addEventListener('click', () => {
+        if (!window.matchMedia('(max-width: 700px)').matches) return;
+        if (!pixelCanvas.width) return;
+        try { fsImg.src = pixelCanvas.toDataURL('image/png'); } catch (e) { return; }
+        fs.classList.add('show');
+      });
+      fs.addEventListener('click', () => fs.classList.remove('show'));
     }
   })();
 </script>
