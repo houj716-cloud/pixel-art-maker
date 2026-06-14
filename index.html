@@ -486,13 +486,97 @@
     grid-template-rows: auto minmax(0, 1fr) auto;
   }
 
-  @media (max-width: 1020px) {
+  @media (max-width: 1020px) and (min-width: 701px) {
     body { overflow-x: auto; }
     .console-machine {
       width: 980px;
       margin-left: 12px;
       margin-right: 12px;
     }
+  }
+
+  /* 手机端 Tab 栏（默认隐藏，仅手机显示） */
+  .mobile-tabs { display: none; }
+
+  /* ===== 手机端：换成竖版游戏机外框 + Tab 切换 ===== */
+  @media (max-width: 700px) {
+    body { overflow-x: hidden; }
+
+    .console-machine {
+      width: 100%;
+      min-width: 0;
+      aspect-ratio: 572 / 1024;
+      background-image: url("console-mobile.png");
+      margin: 4px auto 24px;
+      filter: drop-shadow(0 10px 30px rgba(0,0,0,.7)) drop-shadow(0 0 18px rgba(255,0,255,.18));
+    }
+
+    /* 竖版图的屏幕窗口区域 */
+    .console-screen-slot {
+      left: 18.4%;
+      top: 21.3%;
+      width: 63.1%;
+      height: 25.5%;
+      padding: 5px;
+      border-radius: 6px;
+      background: rgba(3, 4, 12, 0.97);
+    }
+
+    /* 屏幕内：Tab 栏 + 单个面板填满 */
+    .mobile-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 5px;
+      flex: 0 0 auto;
+    }
+    .mobile-tabs button {
+      flex: 1;
+      padding: 4px 2px;
+      font-family: 'Press Start 2P', "Courier New", monospace;
+      font-size: 7px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      background: var(--panel-2);
+      border: 1px solid rgba(0,229,255,.2);
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .mobile-tabs button.active {
+      color: var(--accent);
+      border-color: rgba(57,255,20,.5);
+      text-shadow: 0 0 6px rgba(57,255,20,.6);
+    }
+
+    .console-screen-slot {
+      display: flex;
+      flex-direction: column;
+    }
+    .console-screen-slot .layout {
+      flex: 1 1 auto;
+      min-height: 0;
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    /* 只显示当前 Tab 对应的面板，铺满并内部滚动 */
+    .console-screen-slot.show-controls .stage { display: none; }
+    .console-screen-slot.show-stage .controls { display: none; }
+
+    .console-screen-slot .panel {
+      height: 100%;
+      min-height: 0;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .console-screen-slot .controls { padding: 8px 9px; }
+    .console-screen-slot .controls h2 { margin-bottom: 8px; padding-bottom: 6px; }
+    .console-screen-slot .field { margin-bottom: 8px; }
+    .console-screen-slot .field > label { font-size: 8px; margin-bottom: 4px; }
+    .console-screen-slot .btn { padding: 7px 8px; font-size: 8px; }
+    .console-screen-slot .stage { padding: 8px 9px; min-height: 0; }
+    .console-screen-slot .dropzone { min-height: 0; padding: 14px; }
+    .console-screen-slot .viewer,
+    .console-screen-slot .canvas-wrap { height: auto; min-height: 0; }
   }
 
 </style>
@@ -511,7 +595,11 @@
   </header>
 
   <div class="console-machine">
-    <div class="console-screen-slot">
+    <div class="console-screen-slot show-stage" id="screenSlot">
+      <div class="mobile-tabs" id="mobileTabs">
+        <button type="button" data-mtab="controls">调参喵</button>
+        <button type="button" data-mtab="stage" class="active">出图喵</button>
+      </div>
       <div class="layout">
     <!-- Controls -->
     <section class="panel controls">
@@ -1048,6 +1136,34 @@
   // ---- Init -----------------------------------------------------------------
   updateColorCountVisibility();
 })();
+</script>
+
+<script>
+  // 手机端 Tab 切换：调参喵 / 出图喵
+  (function () {
+    const slot = document.getElementById('screenSlot');
+    const tabs = document.getElementById('mobileTabs');
+    if (!slot || !tabs) return;
+    function show(which) {
+      slot.classList.toggle('show-controls', which === 'controls');
+      slot.classList.toggle('show-stage', which === 'stage');
+      tabs.querySelectorAll('button').forEach(b =>
+        b.classList.toggle('active', b.dataset.mtab === which));
+    }
+    tabs.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-mtab]');
+      if (btn) show(btn.dataset.mtab);
+    });
+    // 选完图后自动跳到「出图喵」看结果
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+      fileInput.addEventListener('change', () => {
+        if (window.matchMedia('(max-width: 700px)').matches && fileInput.files && fileInput.files.length) {
+          show('stage');
+        }
+      });
+    }
+  })();
 </script>
 </body>
 </html>
