@@ -195,10 +195,58 @@
     border-radius: 2px;
     font-size: 11px;
   }
+  /* 像素风分段进度条滑块 */
   input[type="range"] {
+    --val: 50%;
+    -webkit-appearance: none;
+    appearance: none;
     width: 100%;
-    accent-color: var(--accent);
+    height: 16px;
+    background: transparent;
     cursor: pointer;
+    margin: 4px 0;
+  }
+  /* 轨道：深色底 + 绿色硬边填充 + 分段缺口（像素感） */
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 14px;
+    border: 2px solid var(--border);
+    background-color: #0c0c1c;
+    background-image:
+      repeating-linear-gradient(90deg, transparent 0 6px, rgba(0,0,0,0.55) 6px 8px),
+      linear-gradient(90deg, var(--accent) 0 var(--val), #0c0c1c var(--val) 100%);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.6), 0 0 8px rgba(57,255,20,0.12);
+    image-rendering: pixelated;
+  }
+  input[type="range"]::-moz-range-track {
+    height: 14px;
+    border: 2px solid var(--border);
+    background-color: #0c0c1c;
+    background-image: repeating-linear-gradient(90deg, transparent 0 6px, rgba(0,0,0,0.55) 6px 8px);
+  }
+  input[type="range"]::-moz-range-progress {
+    height: 14px;
+    background: var(--accent);
+    background-image: repeating-linear-gradient(90deg, transparent 0 6px, rgba(0,0,0,0.55) 6px 8px);
+  }
+  /* 滑块：方块像素按钮 */
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 22px;
+    margin-top: -6px;
+    border: 2px solid #0c0c1c;
+    border-radius: 0;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(57,255,20,0.7), inset 0 0 0 2px rgba(255,255,255,0.35);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 22px;
+    border: 2px solid #0c0c1c;
+    border-radius: 0;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(57,255,20,0.7), inset 0 0 0 2px rgba(255,255,255,0.35);
   }
   select, button { font-family: "Courier New", monospace; }
   select {
@@ -1105,7 +1153,13 @@
   // ---- UI value bindings ----------------------------------------------------
   function bindVal(input, el, fmt) {
     const out = $(el);
-    const update = () => { out.textContent = fmt ? fmt(input.value) : input.value; };
+    const update = () => {
+      out.textContent = fmt ? fmt(input.value) : input.value;
+      const min = parseFloat(input.min) || 0;
+      const max = parseFloat(input.max);
+      const pct = ((parseFloat(input.value) - min) / ((isNaN(max) ? 100 : max) - min)) * 100;
+      input.style.setProperty("--val", pct + "%");
+    };
     input.addEventListener("input", update);
     update();
   }
