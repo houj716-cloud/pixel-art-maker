@@ -575,52 +575,31 @@
     .console-screen-slot .btn { padding: 7px 8px; font-size: 8px; }
     .console-screen-slot .stage { padding: 8px 9px; min-height: 0; }
     .console-screen-slot .dropzone { min-height: 0; padding: 14px; }
-    /* 出图区：整张结果按窗口自适应缩放、完整可见，不被截断 */
+    /* 出图区：只留整幅图铺满剩余空间，隐藏内层标签/信息行 */
     .console-screen-slot .viewer { height: 100%; min-height: 0; }
     .console-screen-slot .viewer.active {
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr) auto;
-      gap: 6px;
+      grid-template-rows: 1fr;
+      gap: 0;
     }
-    .console-screen-slot .viewer .tabs { gap: 5px; }
-    .console-screen-slot .viewer .tab {
-      padding: 4px 8px;
-      font-size: 8px;
-      letter-spacing: 1px;
-    }
+    .console-screen-slot .viewer .tabs,
+    .console-screen-slot .viewer .meta { display: none; }
     .console-screen-slot .canvas-wrap {
-      padding: 5px;
+      padding: 4px;
       min-height: 0;
       height: auto;
       overflow: hidden;
-      position: relative;
-    }
-    .console-screen-slot .viewer.active .canvas-wrap::after {
-      content: "🔍 点图放大喵";
-      position: absolute;
-      bottom: 3px;
-      right: 5px;
-      font-size: 7px;
-      color: var(--accent-2);
-      background: rgba(0,0,0,0.55);
-      padding: 1px 4px;
-      border-radius: 3px;
-      pointer-events: none;
     }
     .console-screen-slot .canvas-wrap canvas {
       max-width: 100%;
       max-height: 100%;
       width: auto;
       height: auto;
+      cursor: zoom-in;
     }
-    .console-screen-slot .meta {
-      font-size: 7px;
-      letter-spacing: 0;
-      gap: 4px;
-      flex-wrap: wrap;
-      justify-content: center;
-      text-align: center;
-    }
+    /* 手机端固定显示像素结果图 */
+    .console-screen-slot #pixelCanvas { display: block !important; }
+    .console-screen-slot #originalCanvas { display: none !important; }
   }
 
   /* 全屏放大预览（点结果图打开） */
