@@ -501,6 +501,9 @@
   /* 方向键热区（叠在游戏机 D-pad 上，默认隐藏，仅手机显示） */
   .dpad-btn { display: none; }
 
+  /* A/B 圆键热区（叠在游戏机面键上，默认隐藏，仅手机显示） */
+  .face-btn { display: none; }
+
   /* ===== 手机端：换成竖版游戏机外框 + Tab 切换 ===== */
   @media (max-width: 700px) {
     body { overflow-x: hidden; }
@@ -544,6 +547,26 @@
     .dpad-down { top: 64.5%; }
     .dpad-btn:active {
       background: radial-gradient(circle, rgba(57,255,20,0.35), transparent 70%);
+    }
+
+    /* A/B 圆键热区：调参按 A 去出图，出图按 B 回调参 */
+    .face-btn {
+      display: block;
+      position: absolute;
+      width: 12%;
+      height: 7.5%;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      z-index: 6;
+      border-radius: 50%;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-a { left: 69.6%; top: 59.5%; }
+    .btn-b { left: 57.8%; top: 60.4%; }
+    .face-btn:active {
+      background: radial-gradient(circle, rgba(255,0,255,0.4), transparent 70%);
     }
 
     /* 屏幕内：Tab 栏 + 单个面板填满 */
@@ -683,6 +706,8 @@
   <div class="console-machine">
     <button class="dpad-btn dpad-up" id="dpadUp" type="button" aria-label="向上翻动喵"></button>
     <button class="dpad-btn dpad-down" id="dpadDown" type="button" aria-label="向下翻动喵"></button>
+    <button class="face-btn btn-a" id="btnA" type="button" aria-label="A 键 出图喵"></button>
+    <button class="face-btn btn-b" id="btnB" type="button" aria-label="B 键 调参喵"></button>
     <div class="console-screen-slot show-stage" id="screenSlot">
       <div class="mobile-tabs" id="mobileTabs">
         <button type="button" data-mtab="controls">调参喵</button>
@@ -1277,6 +1302,18 @@
     }
     bindDpad(document.getElementById('dpadUp'), -1);
     bindDpad(document.getElementById('dpadDown'), 1);
+
+    // 手机端：A 键（调参→出图）、B 键（出图→调参）
+    const btnA = document.getElementById('btnA');
+    const btnB = document.getElementById('btnB');
+    if (btnA) btnA.addEventListener('click', () => {
+      if (!window.matchMedia('(max-width: 700px)').matches) return;
+      if (slot.classList.contains('show-controls')) show('stage');
+    });
+    if (btnB) btnB.addEventListener('click', () => {
+      if (!window.matchMedia('(max-width: 700px)').matches) return;
+      if (slot.classList.contains('show-stage')) show('controls');
+    });
 
     // 手机端：点结果图全屏放大查看
     const pixelCanvas = document.getElementById('pixelCanvas');
