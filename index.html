@@ -588,6 +588,17 @@
     body { background-color: #ffc4e6; }
     body::after { display: none; }
 
+    /* 去掉面板顶部的霓虹渐变条 */
+    .console-screen-slot .panel::before { display: none; }
+
+    /* 拖拽区：缩小猫图标、内容顶部对齐，避免在小窗口里溢出把猫顶部裁掉 */
+    .console-screen-slot .dropzone {
+      justify-content: flex-start;
+      overflow: auto;
+    }
+    .console-screen-slot .dropzone .big img { width: 54px; }
+    .console-screen-slot .dropzone .big { margin-bottom: 8px; margin-top: 4px; }
+
     /* 游戏机上方 header 浅紫字：粉底上加强对比（深紫 + 加粗 + 白描边光） */
     header p,
     .header-score {
