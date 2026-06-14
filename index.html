@@ -1486,12 +1486,10 @@
       if (slot.classList.contains('show-stage')) { buzz(20); show('controls'); }
     });
 
-    // 手机端：按 START（或点开机屏）进入主界面
+    // 手机端：只能按 START 键进入主界面（点开机屏无效）
     const btnStart = document.getElementById('btnStart');
-    const boot = document.getElementById('bootScreen');
     function startGame() { if (!powered) return; buzz(30); slot.classList.remove('booting'); }
     if (btnStart) btnStart.addEventListener('click', startGame);
-    if (boot) boot.addEventListener('click', startGame);
 
     // 手机端：左侧电源键 —— 模仿 Game Boy 关机/开机
     const powerBtn = document.getElementById('powerBtn');
