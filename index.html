@@ -504,6 +504,9 @@
   /* A/B 圆键热区（叠在游戏机面键上，默认隐藏，仅手机显示） */
   .face-btn { display: none; }
 
+  /* 开机说明界面（默认隐藏，仅手机显示） */
+  .boot-screen { display: none; }
+
   /* ===== 手机端：换成竖版游戏机外框 + Tab 切换 ===== */
   @media (max-width: 700px) {
     body { overflow-x: hidden; }
@@ -567,6 +570,62 @@
     .btn-b { left: 57.8%; top: 60.4%; }
     .face-btn:active {
       background: radial-gradient(circle, rgba(255,0,255,0.4), transparent 70%);
+    }
+
+    /* START 键热区（药丸形，叠在 START 上） */
+    .btn-start {
+      left: 47.5%;
+      top: 69.5%;
+      width: 13%;
+      height: 6%;
+      border-radius: 20px;
+    }
+    .btn-start:active {
+      background: radial-gradient(ellipse, rgba(57,255,20,0.4), transparent 70%);
+    }
+
+    /* 开机说明界面：黑底 + 像素字体，铺满屏幕窗口 */
+    .console-screen-slot.booting .boot-screen { display: flex; }
+    .boot-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 8;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7%;
+      padding: 6% 5%;
+      background: #04040c;
+      border-radius: 4px;
+      overflow: hidden;
+      text-align: center;
+      font-family: 'Press Start 2P', "Courier New", monospace;
+    }
+    .boot-title {
+      font-size: clamp(7px, 2.0vw, 11px);
+      color: var(--accent-3);
+      text-shadow: var(--glow-magenta);
+      letter-spacing: 1px;
+    }
+    .boot-keys {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: clamp(6px, 1.6vw, 9px);
+      line-height: 1.4;
+      color: var(--text);
+    }
+    .boot-keys .k {
+      display: inline-block;
+      min-width: 2.4em;
+      color: var(--accent);
+      text-shadow: 0 0 6px rgba(57,255,20,0.6);
+    }
+    .boot-start {
+      font-size: clamp(7px, 1.8vw, 10px);
+      color: var(--accent);
+      text-shadow: var(--glow-green);
+      animation: blink 1s step-end infinite;
     }
 
     /* 屏幕内：Tab 栏 + 单个面板填满 */
@@ -708,7 +767,17 @@
     <button class="dpad-btn dpad-down" id="dpadDown" type="button" aria-label="向下翻动喵"></button>
     <button class="face-btn btn-a" id="btnA" type="button" aria-label="A 键 出图喵"></button>
     <button class="face-btn btn-b" id="btnB" type="button" aria-label="B 键 调参喵"></button>
-    <div class="console-screen-slot show-stage" id="screenSlot">
+    <button class="face-btn btn-start" id="btnStart" type="button" aria-label="START 开始喵"></button>
+    <div class="console-screen-slot show-stage booting" id="screenSlot">
+      <div class="boot-screen" id="bootScreen">
+        <div class="boot-title">★ NYAN ART ★</div>
+        <div class="boot-keys">
+          <div><span class="k">▲ ▼</span> 翻动调参</div>
+          <div><span class="k">A</span> 去出图喵</div>
+          <div><span class="k">B</span> 回调参喵</div>
+        </div>
+        <div class="boot-start">▶ PRESS START</div>
+      </div>
       <div class="mobile-tabs" id="mobileTabs">
         <button type="button" data-mtab="controls">调参喵</button>
         <button type="button" data-mtab="stage" class="active">出图喵</button>
@@ -1314,6 +1383,13 @@
       if (!window.matchMedia('(max-width: 700px)').matches) return;
       if (slot.classList.contains('show-stage')) show('controls');
     });
+
+    // 手机端：按 START（或点开机屏）进入主界面
+    const btnStart = document.getElementById('btnStart');
+    const boot = document.getElementById('bootScreen');
+    function startGame() { slot.classList.remove('booting'); }
+    if (btnStart) btnStart.addEventListener('click', startGame);
+    if (boot) boot.addEventListener('click', startGame);
 
     // 手机端：点结果图全屏放大查看
     const pixelCanvas = document.getElementById('pixelCanvas');
