@@ -351,6 +351,13 @@
     margin-bottom: 16px;
     filter: drop-shadow(0 0 12px rgba(0,229,255,0.5));
   }
+  .dropzone .big img {
+    display: block;
+    width: 84px;
+    height: auto;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
   .dropzone strong {
     color: var(--accent-2);
     text-shadow: var(--glow-cyan);
@@ -988,7 +995,7 @@
     <!-- Stage -->
     <section class="panel stage">
       <div class="dropzone" id="dropzone">
-        <div class="big">🐱</div>
+        <div class="big"><img src="cat-icon.png" alt="像素猫喵"></div>
         <div><strong>点这里喵～</strong> 或把图拖来给本喵</div>
         <div class="hint">喵支持 PNG / JPG / GIF / WebP · 全程本地处理不联网喵</div>
         <input type="file" id="fileInput" accept="image/*" hidden>
