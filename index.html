@@ -1540,10 +1540,18 @@
       const p = v.play();
       if (p && p.catch) p.catch(() => {});
     }
+    // 先静音自动播放（让背景立刻显示）
     tryPlay();
-    // 部分浏览器需用户首次交互后才允许自动播放
-    document.addEventListener('touchstart', tryPlay, { once: true });
-    document.addEventListener('click', tryPlay, { once: true });
+    // 用户首次交互时解除静音出声（移动端要求带声音播放需有用户手势）
+    function enableSound() {
+      if (!window.matchMedia('(max-width: 700px)').matches) return;
+      v.muted = false;
+      v.volume = 1;
+      const p = v.play();
+      if (p && p.catch) p.catch(() => {});
+    }
+    document.addEventListener('touchstart', enableSound, { once: true });
+    document.addEventListener('click', enableSound, { once: true });
   })();
 </script>
 </body>
